@@ -1,0 +1,37 @@
+{
+  "dependencies": {
+    "@types/shelljs": "^0.8.11",
+    "async": "^3.2.4",
+    "async-es": "^3.2.4",
+    "commander": "^9.4.1",
+    "figlet": "^1.5.2",
+    "module-alias": "^2.2.2",
+    "mongodb": "^4.12.1",
+    "mysql": "^2.18.1",
+    "node-fetch": "^3.3.0",
+    "puppeteer": "^19.4.1",
+    "puppeteer-extra": "^3.3.4",
+    "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "request": "^2.88.2",
+    "shelljs": "^0.8.5",
+    "threads": "^1.7.0",
+    "tiny-worker": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/figlet": "^1.5.5",
+    "@types/node": "^18.11.11",
+    "@types/puppeteer": "^7.0.4",
+    "@wdio/devtools-service": "^8.0.13",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.4"
+  },
+  "_moduleAliases": {
+    "@bot": "bot",
+    "@factory_": "factory",
+    "@interfaces": "interfaces",
+    "@pipeline": "pipeline",
+    "@sites": "sites"
+  },
+  "type": "module"
+}
