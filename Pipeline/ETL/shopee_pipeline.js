@@ -46,8 +46,8 @@ import request from "request";
         charset: 'utf8mb4'
     });
 
-    var sqlInfo = "INSERT INTO product_shopee2 (name, price, description, item_id, shop_id, category_id, review_id) VALUES ?";
-    var sqlImg = "INSERT INTO product_img2 (thumbnail_url, thumbnail_image, product_id) VALUES ?";
+    var sqlInfo = "INSERT INTO product_shopee (name, price, description, item_id, shop_id, category_id, review_id) VALUES ?";
+    var sqlImg = "INSERT INTO img_shopee (thumbnail_url, thumbnail_image, product_id) VALUES ?";
 
     var img_mysql = [];
 
@@ -57,7 +57,7 @@ import request from "request";
         for (var key in product_mysql) {
             let itemId = product_mysql[key][3];
             const product_check = await new Promise(async (resolve) => {
-                con.query("SELECT * FROM product_shopee2 WHERE item_id = " + itemId + " LIMIT 1", function (err, result, fields) {
+                con.query("SELECT * FROM product_shopee WHERE item_id = " + itemId + " LIMIT 1", function (err, result, fields) {
                     if (err) throw err;
                     if (result.length > 0) {
                         console.log("Exist product: " + itemId);
@@ -95,11 +95,13 @@ import request from "request";
 
                         await new Promise(async function (resolve) {
                             request.head(url, function (err, res, body) {
-                                //   console.log('content-type:', res.headers['content-type']);
-                                //   console.log('content-length:', res.headers['content-length']);
-                                request(url).pipe(fs.createWriteStream(img_path)).on('close', function () {
-                                    console.log('Download image: ' + url);
-                                });
+                                // if( err ){
+                                //     console.log(err);
+                                // }else{
+                                    request(url).pipe(fs.createWriteStream(img_path)).on('close', function () {
+                                        console.log('Download image: ' + url);
+                                    });
+                                // }
                                 resolve();
                             });
                         });
