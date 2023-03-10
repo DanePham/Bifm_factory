@@ -45,20 +45,20 @@ def etl():
                         for thumbnail_url in images:
                             thumbnail_image = os.path.basename(urlparse(thumbnail_url).path)
                             product_id = bifm_cursor.lastrowid
-                            image_path = 'F:/DATA/Chotot/' + thumbnail_image
+                            # image_path = 'F:/DATA/Chotot/' + thumbnail_image
                             
-                            if path.exists(image_path) is False:
-                                with open(image_path, 'wb') as handle:
-                                    response = requests.get(thumbnail_url, stream=True)
+                            # if path.exists(image_path) is False:
+                            #     with open(image_path, 'wb') as handle:
+                            #         response = requests.get(thumbnail_url, stream=True)
 
-                                    if not response.ok:
-                                        print(response)
+                            #         if not response.ok:
+                            #             print(response)
 
-                                    for block in response.iter_content(1024):
-                                        if not block:
-                                            break
+                            #         for block in response.iter_content(1024):
+                            #             if not block:
+                            #                 break
 
-                                        handle.write(block)
+                            #             handle.write(block)
                             
                             val = (thumbnail_url, thumbnail_image, product_id)
                             bifm_cursor.execute("INSERT INTO img_chotot (thumbnail_url,thumbnail_image,product_id) VALUES (%s,%s,%s)", val)

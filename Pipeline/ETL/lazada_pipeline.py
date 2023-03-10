@@ -56,9 +56,9 @@ def etl():
                                 thumbnail_url = image['image']
                                 thumbnail_image = os.path.basename(urlparse(thumbnail_url).path)
                                 product_id = bifm_cursor.lastrowid
-                                image_path = 'F:/DATA/Lazada/' + thumbnail_image
+                                # image_path = 'F:/DATA/Lazada/' + thumbnail_image
                                 
-                                crawlerImg(image_path, thumbnail_url)
+                                # crawlerImg(image_path, thumbnail_url)
                                 
                                 val = (thumbnail_url, thumbnail_image, product_id)
                                 bifm_cursor.execute("INSERT INTO img_lazada (thumbnail_url,thumbnail_image,product_id) VALUES (%s,%s,%s)", val)

@@ -55,9 +55,9 @@ def etl():
                         if thumbnail_url is not None:
                             thumbnail_image = os.path.basename(urlparse(thumbnail_url).path)
                             product_id = bifm_cursor.lastrowid
-                            image_path = 'F:/DATA/Tiki/' + thumbnail_image
+                            # image_path = 'F:/DATA/Tiki/' + thumbnail_image
                             
-                            crawlerImg(image_path, thumbnail_url)
+                            # crawlerImg(image_path, thumbnail_url)
                             
                             val = (thumbnail_url, thumbnail_image, product_id)
                             bifm_cursor.execute("INSERT INTO img_tiki (thumbnail_url,thumbnail_image,product_id) VALUES (%s,%s,%s)", val)

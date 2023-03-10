@@ -57,9 +57,9 @@ def etl():
                             for thumbnail_image in images:
                                 thumbnail_url =  'https://cf.shopee.vn/file/' + thumbnail_image
                                 product_id = bifm_cursor.lastrowid
-                                image_path = 'F:/DATA/Shoppe/' + thumbnail_image + '.jpg'
+                                # image_path = 'F:/DATA/Shoppe/' + thumbnail_image + '.jpg'
                                 
-                                crawlerImg(image_path, thumbnail_url)
+                                # crawlerImg(image_path, thumbnail_url)
                                 
                                 val = (thumbnail_url, thumbnail_image, product_id)
                                 bifm_cursor.execute("INSERT INTO img_shopee (thumbnail_url,thumbnail_image,product_id) VALUES (%s,%s,%s)", val)
