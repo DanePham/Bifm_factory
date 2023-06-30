@@ -1,8 +1,8 @@
 const { Worker } = require("worker_threads");
-// import { Worker } from 'worker_threads';
 
 const THREADS_AMOUNT = 4;
 // const THREADS_AMOUNT = 1;
+// const THREADS_AMOUNT = 3;
 const LIMIT = 300;
 
 const OFFSET = 0; 
@@ -63,6 +63,7 @@ async function worker_import() {
   return Promise.all(promises)
     .then(() => {
       console.log("OK ETL");
+      worker_import();
     })
     .catch((e) => {
       // handle errors here
