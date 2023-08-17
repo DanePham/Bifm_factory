@@ -117,7 +117,7 @@ const factory = {
     exportDataPipeline: async function(name, price, description, item_id, seller_id, category_id, thumbs){
       return await new Promise(async (resolve) => {
         const sqlInfo = `INSERT INTO product_info (name, price, description, item_id, shop_id, seller_id, category_id, review_id, site_id) VALUES ?`;
-        let values = [[name, price, description, item_id, null, seller_id, category_id, null, 4]];
+        let values = [[name, price, description, item_id, null, seller_id, category_id, null, 3]];
         const productIdDb = await factory.insertInfo(sqlInfo, values);
         
         const sqlImg = `INSERT INTO product_img (thumbnail_url, thumbnail_image, product_id, site_id) VALUES ?`;

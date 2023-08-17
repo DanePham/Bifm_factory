@@ -21,35 +21,38 @@ def es_pipeline():
     CONSTR = 'mysql+pymysql://root:@127.0.0.1/bifm'
     sqlEngine       = create_engine(CONSTR, pool_recycle=3600)
     dbConnection    = sqlEngine.connect()
-    df           = pd.read_sql("select * from product_info WHERE is_es = 0 LIMIT 1000", dbConnection);
+    df           = pd.read_sql("select product_info.*, CONCAT('[',GROUP_CONCAT(JSON_OBJECT('thumbnail_url',thumbnail_url,'thumbnail_image',thumbnail_image)),']') AS thumb from product_info JOIN product_img ON product_info.id = product_img.product_id WHERE is_es = 0 GROUP BY id LIMIT 1000", dbConnection);
     
     if( len(df.index) > 1 ):
-        list_id = tuple(df.iloc[:, 0])
+        try:
+            list_id = tuple(df.iloc[:, 0])
         
-        rows = df.to_json(orient='records')
+            rows = df.to_json(orient='records')
 
-        es = Elasticsearch()
-        actions=[]
+            es = Elasticsearch()
+            actions=[]
 
-        json_data = json.loads(rows)
+            json_data = json.loads(rows)
 
-        for item in json_data:
-            action = {
-                "_id": "bifm_%s"%int(item['id']),
-                "doc_type": "_doc",
-                "doc": item
-            }
-            actions.append(action)
+            for item in json_data:
+                action = {
+                    "_id": "bifm_%s"%int(item['id']),
+                    "doc_type": "_doc",
+                    "doc": item
+                }
+                actions.append(action)
 
-        response = helpers.bulk(es, actions, index="bifm", doc_type='_doc')
-        
+            response = helpers.bulk(es, actions, index="bifm", doc_type='_doc')
+            
 
-        dbConnection.close()
+            dbConnection.close()
 
-        bifm_cursor.execute( "UPDATE product_info SET is_es = 1 WHERE id IN " + str(list_id) )
-        bifm_mysql.commit()
-        print("-------------------- Run pipeline ES from: " + str(min(list_id)) + " -> " + str(max(list_id)))
-        es_pipeline()
+            bifm_cursor.execute( "UPDATE product_info SET is_es = 1 WHERE id IN " + str(list_id) )
+            bifm_mysql.commit()
+            print("-------------------- Run pipeline ES from: " + str(min(list_id)) + " -> " + str(max(list_id)))
+            es_pipeline()
+        except Exception as error:
+            print("An exception occurred:", error)
     else:
         print("-------------------- Run pipeline ES finish --------------------")
     
