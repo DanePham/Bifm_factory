@@ -81,19 +81,17 @@ const factory = {
       
           if (lazadaItems.length > 0) {
             const promisesItems = lazadaItems.map(item => new Promise(resolve => {
-              // for (let j = 0; j < lazadaItems.length; j++) {
-                const name = item.name;
-                const price = item.price;
-                const description = null;
-                const item_id = item.itemId;
-                const seller_id = item.sellerId;
-                const category_id = item.categories[0];
-                const thumbs = item.thumbs;
+              const name = item.name;
+              const price = item.price;
+              const description = null;
+              const item_id = item.itemId;
+              const seller_id = item.sellerId;
+              const category_id = item.categories[0];
+              const thumbs = item.thumbs;
 
-                factory[workerData.params.site].exportDataPipeline(name, price, description, item_id, seller_id, category_id, thumbs).then(() => {
-                  resolve(true);
-                });
-              // }
+              factory[workerData.params.site].exportDataPipeline(name, price, description, item_id, seller_id, category_id, thumbs).then(() => {
+                resolve(true);
+              });
             }));
             
             factory.updateExtract(value.id);
