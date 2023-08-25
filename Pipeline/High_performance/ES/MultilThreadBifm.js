@@ -1,4 +1,6 @@
-const { Worker } = require("worker_threads");
+// const { Worker } = require("worker_threads");
+import ftfy from './ftfy.js'
+import { Worker } from 'worker_threads'
 
 const THREADS_AMOUNT = 4;
 // const THREADS_AMOUNT = 1;

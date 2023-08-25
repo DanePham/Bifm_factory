@@ -1,11 +1,6 @@
-const { performance } = require("perf_hooks");
-
-let mysql = require("mysql");
-var url = require("url");
-var path = require("path");
-
-const { parentPort, workerData } = require("worker_threads");
-const e = require("express");
+import mysql from 'mysql'
+import path from 'path'
+import { workerData } from 'worker_threads'
 
 const config = {
   host: "localhost",
@@ -14,6 +9,17 @@ const config = {
   database: "bifm",
   port: 3306,
   charset: "utf8mb4",
+};
+
+String.prototype.slugify = function (separator = "-") {
+  return this
+      .toString()
+      .normalize('NFD')                   // split an accented letter in the base letter and the acent
+      .replace(/[\u0300-\u036f]/g, '')   // remove all previously split accents
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9 ]/g, '')   // remove all chars not letters, numbers and spaces (to be replaced)
+      .replace(/\s+/g, separator);
 };
 
 //connect to database
@@ -56,7 +62,6 @@ const factory = {
       connection.connect(function (err) {
         var tb_crawler = workerData.params.tableCrawler;
         var limit_number = workerData.limit;
-        // var offset_number = workerData.params.offset * limit_number;
         var offset_number = workerData.offset * limit_number;
   
         var sql = `SELECT * FROM ${tb_crawler} WHERE is_extract = 0 LIMIT ${limit_number} OFFSET ${offset_number}`;
@@ -75,7 +80,6 @@ const factory = {
   lazada : {
     transDataPipeline : async function(data){
       const promisesJson = data.map(value => new Promise(async (resolve) =>{
-        // data.forEach(function(value, key){
           const dataJson = JSON.parse(value.data_crawler);
           const lazadaItems = dataJson.mods.listItems;
       
@@ -84,12 +88,14 @@ const factory = {
               const name = item.name;
               const price = item.price;
               const description = null;
+              const uri = null;
+              const url = item.itemUrl;
               const item_id = item.itemId;
               const seller_id = item.sellerId;
               const category_id = item.categories[0];
               const thumbs = item.thumbs;
 
-              factory[workerData.params.site].exportDataPipeline(name, price, description, item_id, seller_id, category_id, thumbs).then(() => {
+              factory[workerData.params.site].exportDataPipeline(name, price, description, uri, url, item_id, seller_id, category_id, thumbs).then(() => {
                 resolve(true);
               });
             }));
@@ -104,7 +110,6 @@ const factory = {
 
             resolve(true);
           }
-        // });
       }));
 
       await Promise.all(promisesJson).then(() => {
@@ -112,16 +117,16 @@ const factory = {
         process.exit();
       });
     },
-    exportDataPipeline: async function(name, price, description, item_id, seller_id, category_id, thumbs){
+    exportDataPipeline: async function(name, price, description, uri, url, item_id, seller_id, category_id, thumbs){
       return await new Promise(async (resolve) => {
-        const sqlInfo = `INSERT INTO product_lazada (name, price, description, item_id, seller_id, category_id) VALUES ?`;
-        let values = [[name, price, description, item_id, seller_id, category_id]];
+        const sqlInfo = `INSERT INTO product_lazada (name, price, description, uri, url, item_id, seller_id, category_id) VALUES ?`;
+        let values = [[name, price, description, uri, url, item_id, seller_id, category_id]];
         const productIdDb = await factory.insertInfo(sqlInfo, values);
         
         const sqlImg = `INSERT INTO img_lazada (thumbnail_url, thumbnail_image, product_id) VALUES ?`;
         if( thumbs !== null && thumbs.length > 0 ){
           const promisesImg = thumbs.map(thumb => new Promise(resolve => {
-          // for (let i = 0; i < thumbs.length; i++) {
+
             if( thumb.image !== '' ){
               const parsed = url.parse(thumb.image);
               
@@ -132,7 +137,7 @@ const factory = {
                 resolve(true);
               });
             }    
-          // }
+
           }));
 
           await Promise.all(promisesImg).then(() => {
@@ -147,23 +152,23 @@ const factory = {
   chotot : {
     transDataPipeline : async function(data){
       const promisesJson = data.map(value => new Promise(async (resolve) =>{
-        // data.forEach(function(value, key){
-          const dataJson = JSON.parse(value.data_crawler);
-          const chototItems = dataJson.ad;
+        const dataJson = JSON.parse(value.data_crawler);
+        const chototItems = dataJson.ad;
 
-          const name = chototItems.subject;
-          const price = chototItems.price ?? null;
-          const description = chototItems.body;
-          const item_id = chototItems.ad_id;
-          const category_id = chototItems.category;
-          const images = chototItems.images ?? null;
-    
-          factory[workerData.params.site].exportDataPipeline(name, price, description, item_id, category_id, images).then(() => {
-            resolve(true);
-          });
+        const name = chototItems.subject;
+        const price = chototItems.price ?? null;
+        const description = chototItems.body;
+        const uri = null;
+        const url = chototItems.link_url;
+        const item_id = chototItems.ad_id;
+        const category_id = chototItems.category;
+        const images = chototItems.images ?? null;
+  
+        factory[workerData.params.site].exportDataPipeline(name, price, description, uri, url, item_id, category_id, images).then(() => {
+          resolve(true);
+        });
 
-          factory.updateExtract(value.id);
-        // });
+        factory.updateExtract(value.id);
       }));
 
       await Promise.all(promisesJson).then(() => {
@@ -171,16 +176,15 @@ const factory = {
         process.exit();
       });
     },
-    exportDataPipeline: async function(name, price, description, item_id, category_id, images){
+    exportDataPipeline: async function(name, price, description, uri, url, item_id, category_id, images){
       return await new Promise(async (resolve) => {
-        const sqlInfo = `INSERT INTO product_chotot (name, price, description, item_id, category_id) VALUES ?`;
-        let values = [[name, price, description, item_id, category_id]];
+        const sqlInfo = `INSERT INTO product_chotot (name, price, description, uri, url, item_id, category_id) VALUES ?`;
+        let values = [[name, price, description, uri, url, item_id, category_id]];
         const productIdDb = await factory.insertInfo(sqlInfo, values);
         
         const sqlImg = `INSERT INTO img_chotot (thumbnail_url, thumbnail_image, product_id) VALUES ?`;
         if( images !== null ){
           const promisesImg = images.map(thumb => new Promise(resolve => {
-          // for (let i = 0; i < images.length; i++) {
             const parsed = url.parse(thumb);
             const thumbnail_image = path.basename(parsed.pathname);
             let values = [[thumb, thumbnail_image, productIdDb]];
@@ -188,7 +192,6 @@ const factory = {
             factory.insertImg(sqlImg, values).then(() => {
               resolve(true);
             });
-          // }
           }));
 
           await Promise.all(promisesImg).then(() => {
@@ -209,19 +212,19 @@ const factory = {
     
         if (shopeeItems.length > 0) {
           const promisesItems = shopeeItems.map(item => new Promise(resolve => {
-          // for (let j = 0; j < shopeeItems.length; j++) {
             const name = item.name;
             const price = item.price;
             const description = null;
+            const uri = null;
+            const url = name.slugify() + '-i.' + item.shopid + '.' + item.itemid;
             const item_id = item.itemid;
             const shop_id = item.shopid;
             const category_id = value.category_id;
             const images = item.images;
       
-            factory[workerData.params.site].exportDataPipeline(name, price, description, item_id, shop_id, category_id, images).then(() => {
+            factory[workerData.params.site].exportDataPipeline(name, price, description, uri, url, item_id, shop_id, category_id, images).then(() => {
               resolve(true);
             });
-          // }
           }));
 
           factory.updateExtract(value.id);
@@ -242,23 +245,21 @@ const factory = {
         process.exit();
       });
     },
-    exportDataPipeline: async function(name, price, description, item_id, shop_id, category_id, images){
+    exportDataPipeline: async function(name, price, description, uri, url, item_id, shop_id, category_id, images){
       return await new Promise(async (resolve) => {
-        const sqlInfo = `INSERT INTO product_shopee (name, price, description, item_id, shop_id, category_id) VALUES ?`;
-        let values = [[name, price, description, item_id, shop_id, category_id]];
+        const sqlInfo = `INSERT INTO product_shopee (name, price, description, uri, url, item_id, shop_id, category_id) VALUES ?`;
+        let values = [[name, price, description, uri, url, item_id, shop_id, category_id]];
         const productIdDb = await factory.insertInfo(sqlInfo, values);
         
         const sqlImg = `INSERT INTO img_shopee (thumbnail_url, thumbnail_image, product_id) VALUES ?`;
         
         const promisesImg = images.map(thumb => new Promise(resolve => {
-        // for (let i = 0; i < images.length; i++) {
           const thumbnail_url = 'https://cf.shopee.vn/file/' + thumb;
           let values = [[thumbnail_url, thumb, productIdDb]];
     
           factory.insertImg(sqlImg, values).then(() => {
             resolve(true);
           });
-        // }
         }));
 
         await Promise.all(promisesImg).then(() => {
@@ -270,25 +271,24 @@ const factory = {
   tiki : {
     transDataPipeline : async function(data){
       const promisesJson = data.map(value => new Promise(async (resolve) =>{
-      // data.forEach(function(value, key){
         const dataJson = JSON.parse(value.data_crawler);
         const tikiItems = dataJson.data;
     
         if (tikiItems.length > 0) {
           const promisesItems = tikiItems.map(item => new Promise(resolve => {
-          // for (let j = 0; j < tikiItems.length; j++) {
             const name = item.name;
             const price = item.price;
             const description = null;
+            const uri = item.url_key;
+            const url = 'https://tiki.vn/' + item.url_path;
             const item_id = item.id;
             const seller_id = item.seller_product_id;
             const category_id = item.primary_category_path.split('/')[-1];
             const thumbnail_url = item.thumbnail_url;
       
-            factory[workerData.params.site].exportDataPipeline(name, price, description, item_id, seller_id, category_id, thumbnail_url).then(() => {
+            factory[workerData.params.site].exportDataPipeline(name, price, description, uri, url, item_id, seller_id, category_id, thumbnail_url).then(() => {
               resolve(true);
             });
-          // }
           }));
 
           factory.updateExtract(value.id);
@@ -301,8 +301,6 @@ const factory = {
 
           resolve(true);
         }
-
-      // });
       }));
 
       await Promise.all(promisesJson).then(() => {
@@ -310,10 +308,10 @@ const factory = {
         process.exit();
       });
     },
-    exportDataPipeline: async function(name, price, description, item_id, seller_id, category_id, thumbnail_url){
+    exportDataPipeline: async function(name, price, description, uri, url, item_id, seller_id, category_id, thumbnail_url){
       return await new Promise(async (resolve) => {
-        const sqlInfo = `INSERT INTO product_tiki (name, price, description, item_id, seller_id, category_id) VALUES ?`;
-        let values = [[name, price, description, item_id, seller_id, category_id]];
+        const sqlInfo = `INSERT INTO product_tiki (name, price, description, uri, url, item_id, seller_id, category_id) VALUES ?`;
+        let values = [[name, price, description, uri, url, item_id, seller_id, category_id]];
         const productIdDb = await factory.insertInfo(sqlInfo, values);
         
         const sqlImg = `INSERT INTO img_tiki (thumbnail_url, thumbnail_image, product_id) VALUES ?`;
