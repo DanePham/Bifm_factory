@@ -1,6 +1,8 @@
 import mysql from 'mysql'
 import path from 'path'
+import urlParse from 'url'
 import { workerData } from 'worker_threads'
+import ftfy from './ftfy.js'
 
 const config = {
   host: "localhost",
@@ -85,7 +87,7 @@ const factory = {
       
           if (lazadaItems.length > 0) {
             const promisesItems = lazadaItems.map(item => new Promise(resolve => {
-              const name = item.name;
+              const name = ftfy.fix_encoding(item.name);
               const price = item.price;
               const description = null;
               const uri = null;
@@ -128,7 +130,7 @@ const factory = {
           const promisesImg = thumbs.map(thumb => new Promise(resolve => {
 
             if( thumb.image !== '' ){
-              const parsed = url.parse(thumb.image);
+              const parsed = urlParse.parse(thumb.image);
               
               const thumbnail_image = path.basename(parsed.pathname);
               let values = [[thumb.image, thumbnail_image, productIdDb]];
@@ -155,11 +157,11 @@ const factory = {
         const dataJson = JSON.parse(value.data_crawler);
         const chototItems = dataJson.ad;
 
-        const name = chototItems.subject;
+        const name = ftfy.fix_encoding(chototItems.subject);
         const price = chototItems.price ?? null;
         const description = chototItems.body;
         const uri = null;
-        const url = chototItems.link_url;
+        const url = value.link_url;
         const item_id = chototItems.ad_id;
         const category_id = chototItems.category;
         const images = chototItems.images ?? null;
@@ -185,7 +187,7 @@ const factory = {
         const sqlImg = `INSERT INTO img_chotot (thumbnail_url, thumbnail_image, product_id) VALUES ?`;
         if( images !== null ){
           const promisesImg = images.map(thumb => new Promise(resolve => {
-            const parsed = url.parse(thumb);
+            const parsed = urlParse.parse(thumb);
             const thumbnail_image = path.basename(parsed.pathname);
             let values = [[thumb, thumbnail_image, productIdDb]];
       
@@ -206,17 +208,16 @@ const factory = {
   shopee : {
     transDataPipeline : async function(data){
       const promisesJson = data.map(value => new Promise(async (resolve) =>{
-      // data.forEach(function(value, key){
         const dataJson = JSON.parse(value.data_crawler);
         const shopeeItems = dataJson.data.sections[0].data.item;
     
         if (shopeeItems.length > 0) {
           const promisesItems = shopeeItems.map(item => new Promise(resolve => {
-            const name = item.name;
+            const name = ftfy.fix_encoding(item.name);
             const price = item.price;
             const description = null;
-            const uri = null;
-            const url = name.slugify() + '-i.' + item.shopid + '.' + item.itemid;
+            const uri = name.slugify() + '-i.' + item.shopid + '.' + item.itemid;
+            const url = 'https://shopee.vn/' + uri;
             const item_id = item.itemid;
             const shop_id = item.shopid;
             const category_id = value.category_id;
@@ -237,7 +238,6 @@ const factory = {
 
           resolve(true);
         }
-      // });
       }));
 
       await Promise.all(promisesJson).then(() => {
@@ -276,7 +276,7 @@ const factory = {
     
         if (tikiItems.length > 0) {
           const promisesItems = tikiItems.map(item => new Promise(resolve => {
-            const name = item.name;
+            const name = ftfy.fix_encoding(item.name);
             const price = item.price;
             const description = null;
             const uri = item.url_key;
@@ -316,7 +316,7 @@ const factory = {
         
         const sqlImg = `INSERT INTO img_tiki (thumbnail_url, thumbnail_image, product_id) VALUES ?`;
         if( thumbnail_url !== null ){
-          const parsed = url.parse(thumbnail_url);
+          const parsed = urlParse.parse(thumbnail_url);
           const thumbnail_image = path.basename(parsed.pathname);
           let values = [[thumbnail_url, thumbnail_image, productIdDb]];
     
