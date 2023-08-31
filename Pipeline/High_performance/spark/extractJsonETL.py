@@ -5,9 +5,33 @@ os.environ['PYSPARK_PYTHON'] = sys.executable
 os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable
 # Imports
 from pyspark.sql import SparkSession
+import json
+from ftfy import fix_encoding 
+import pandas as pd
+from pyspark.sql.functions import upper
 
 # Create SparkSession
 spark = SparkSession.builder.appName('SparkByExamples.com').config("spark.jars", "mysql-connector-j-8.1.0.jar").getOrCreate()
+
+def convert_data(df):
+    # data_crawler = json.loads(df.data_crawler)
+    # data_crawler = df.data_crawler.apply(json.loads)
+    # item = data_crawler['ad'];
+    
+    return df.withColumn('name', df.data_crawler)
+    
+    # return df.withColumns(
+    #     {
+    #         'name': fix_encoding(item['subject']), 
+    #         'price': item['price'] or None,
+    #         'description': item['body'],
+    #         'uri': None,
+    #         'url': df.link_url,
+    #         'item_id': item['ad_id'],
+    #         'category_id': item['category']
+    #     }
+    # )
+    # return df.withColumn("link_url",upper(df.link_url))
 
 def extract():
     global df
@@ -18,28 +42,67 @@ def extract():
         .option("url", "jdbc:mysql://localhost:3306/bifm") \
         .option("user", "root") \
         .option("password", "") \
-        .option("query", "select * from chotot_crawler where is_extract = 0") \
+        .option("query", "select * from chotot_crawler_2 where is_extract = 0") \
         .option("numPartitions",5) \
         .option("fetchsize", 20) \
         .load()
-        
     df.show()
-    
     print("extract") 
 
 def transform():
+    global df_trans
+    
+    # Define data structure of dataframe transform
+    # df_trans = pd.DataFrame(columns=['name', 'price', 'description', 'uri', 'url', 'item_id', 'category_id', 'review_id'])
+    # # With the itertuples method
+    # for row in df.rdd.toLocalIterator():
+    #     data_crawler = json.loads(row['data_crawler'])
+    #     item = data_crawler['ad'];
+        
+    #     name = fix_encoding(item['subject']);
+    #     price = item['price'] or None;
+    #     description = item['body'];
+    #     uri = None;
+    #     url = row['link_url'];
+    #     item_id = item['ad_id'];
+    #     category_id = item['category'];
+    #     # images = item['images'] or None;
+        
+    #     df_trans.loc[len(df_trans.index)] = [name, price, description, uri, url, item_id, category_id, None] 
+        
+    # select id and name column using map()
+    # df_trans = df.rdd.map(lambda loop: 
+    #     ( 
+    #         json.loads(loop['data_crawler'])['ad']['subject'], 
+    #         json.loads(loop['data_crawler'])['ad']['price'], 
+    #         json.loads(loop['data_crawler'])['ad']['body'], 
+    #         None, 
+    #         loop['link_url'], 
+    #         json.loads(loop['data_crawler'])['ad']['ad_id'], 
+    #         json.loads(loop['data_crawler'])['ad']['category'],
+    #         None
+    #     )
+    # )
+    
+    df_trans = df.transform(convert_data)
+    
+    df_trans.show()
+    
+    # convert to dataframe and display
+    # df_trans.toDF(['name', 'price', 'description', 'uri', 'url', 'item_id', 'category_id', 'review_id'])
+    
     print("transform") 
 
 def load():
-    # Write to MySQL Table
-    df.write \
-      .format("jdbc") \
-      .option("driver","com.mysql.jdbc.Driver") \
-      .option("url", "jdbc:mysql://localhost:3306/bifm") \
-      .option("dbtable", "chotot_crawler_2") \
-      .option("user", "root") \
-      .option("password", "") \
-      .save()
+#     # Write to MySQL Table
+#     df_trans.toDF(['name', 'price', 'description', 'uri', 'url', 'item_id', 'category_id', 'review_id']).write \
+#       .format("jdbc") \
+#       .option("driver","com.mysql.jdbc.Driver") \
+#       .option("url", "jdbc:mysql://localhost:3306/bifm") \
+#       .option("dbtable", "product_chotot_2") \
+#       .option("user", "root") \
+#       .option("password", "") \
+#       .save()
     
     print("load") 
 
