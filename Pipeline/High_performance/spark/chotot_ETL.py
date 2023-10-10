@@ -14,33 +14,14 @@ from pyspark.sql import SparkSession
 import json
 from ftfy import fix_encoding 
 import pandas as pd
-from pyspark.sql.functions import upper, from_json, col
+from pyspark.sql.functions import upper, from_json, col, lit
 
 # Create SparkSession
 spark = SparkSession.builder.appName('SparkByExamples.com').config("spark.jars", "mysql-connector-j-8.1.0.jar").getOrCreate()
 
-def convert_data(df):
-    # data_crawler = json.loads(df.data_crawler)
-    # data_crawler = df.data_crawler.apply(json.loads)
-    # item = data_crawler['ad'];
-    
-    return df.withColumn('name', df.data_crawler)
-    # return df.withColumn('name', from_json(col('data_crawler'), json_schema))
-    
-    # return df.withColumns(
-    #     {
-    #         'name': fix_encoding(item['subject']), 
-    #         'price': item['price'] or None,
-    #         'description': item['body'],
-    #         'uri': None,
-    #         'url': df.link_url,
-    #         'item_id': item['ad_id'],
-    #         'category_id': item['category']
-    #     }
-    # )
-    # return df.withColumn("link_url",upper(df.link_url))
-
 def extract():
+    print("extract") 
+    
     global df
     # Read from MySQL Table
     df = spark.read \
@@ -49,14 +30,15 @@ def extract():
         .option("url", "jdbc:mysql://localhost:3306/bifm") \
         .option("user", "root") \
         .option("password", "") \
-        .option("query", "select * from chotot_crawler_2 where is_extract = 0") \
+        .option("query", "select * from chotot_crawler_2") \
         .option("numPartitions",5) \
         .option("fetchsize", 20) \
         .load()
     df.show()
-    print("extract") 
 
 def transform():
+    print("transform") 
+    
     global df_trans
     
     # Define data structure of dataframe transform
@@ -91,42 +73,34 @@ def transform():
     #     )
     # )
     
-        
-    
-    # df_trans = df.transform(convert_data)
-    
-    # df_trans.show()
-    
     # new_df = sqlContext.read.json(df.rdd.map(lambda r: Row(crwler=r.data_crawler,  link=r.link_url)))
     new_df = sqlContext.read.json(df.rdd.map(lambda r: r.data_crawler))
-    new_df.printSchema()
+    # new_df.printSchema()
     
-    df1 = new_df.select('ad.ad_id','ad.price','ad.body','null as uri','null as url',('ad.ad_id').alias('item_id'),('ad.category').alias('category_id'))
-    df1.show()
-    # convert to dataframe and display
-    # df_trans.toDF(['name', 'price', 'description', 'uri', 'url', 'item_id', 'category_id', 'review_id'])
-    
-    print("transform") 
+    df_trans = new_df.select(col('ad.subject').alias("name"), 
+                        'ad.price', 
+                        col('ad.body').alias("description"), 
+                        lit('NULL').alias('url'), 
+                        lit('NULL').alias('uri'), 
+                        col('ad.ad_id').alias("item_id"), 
+                        col('ad.category').alias("category_id"),
+                        lit(0).alias('review_id'),
+                        lit(0).alias('is_es'))
+    df_trans.show()
 
 def load():
-#     # Write to MySQL Table
-#     df_trans.toDF(['name', 'price', 'description', 'uri', 'url', 'item_id', 'category_id', 'review_id']).write \
-#       .format("jdbc") \
-#       .option("driver","com.mysql.jdbc.Driver") \
-#       .option("url", "jdbc:mysql://localhost:3306/bifm") \
-#       .option("dbtable", "product_chotot_2") \
-#       .option("user", "root") \
-#       .option("password", "") \
-#       .save()
+    # Write to MySQL Table
+    df_trans.write \
+      .format("jdbc") \
+      .option("driver","com.mysql.cj.jdbc.Driver") \
+      .option("url", "jdbc:mysql://localhost:3306/bifm") \
+      .option("dbtable", "product_chotot_2") \
+      .option("user", "root") \
+      .option("password", "") \
+      .mode('append') \
+      .save()
     
     print("load") 
-
-# Create DataFrame 
-# columns = ["id", "name","age","gender"]
-# data = [(1, "James",30,"M"), (2, "Ann",40,"F"),
-#     (3, "Jeff",41,"M"),(4, "Jennifer",20,"F")]
-
-# sampleDF = spark.sparkContext.parallelize(data).toDF(columns)
 
 extract() 
 transform()
