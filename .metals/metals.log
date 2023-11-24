@@ -1,0 +1,20 @@
+2023.11.24 16:23:39 INFO  Started: Metals version 1.1.0 in folders 'D:\Bifm\Bifm_factory' for client Visual Studio Code 1.73.0.
+2023.11.24 16:23:40 WARN  Build server is not auto-connectable.
+2023.11.24 16:23:40 WARN  no build tool detected in workspace 'D:\Bifm\Bifm_factory'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2023.11.24 16:23:40 WARN  no build target for: D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\src\main\scala\Main.scala
+2023.11.24 16:23:41 INFO  no build target found for D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\src\main\scala\Main.scala. Using presentation compiler with project's scala-library version: 3.3.1
+2023.11.24 16:23:43 INFO  time: code lens generation in 3.06s
+2023.11.24 16:24:06 WARN  no build target for: D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\build.sbt
+2023.11.24 16:33:36 INFO  Shutting down server
+2023.11.24 16:33:36 INFO  shutting down Metals
+2023.11.24 16:33:36 INFO  Exiting server
+2023.11.24 16:34:23 INFO  Started: Metals version 1.1.0 in folders 'D:\Bifm\Bifm_factory' for client Visual Studio Code 1.73.0.
+2023.11.24 16:34:24 WARN  Build server is not auto-connectable.
+2023.11.24 16:34:24 WARN  no build tool detected in workspace 'D:\Bifm\Bifm_factory'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2023.11.24 16:34:24 WARN  no build target for: D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\build.sbt
+2023.11.24 16:34:25 INFO  no build target found for D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\build.sbt. Using presentation compiler with project's scala-library version: 3.3.1
+2023.11.24 16:34:27 INFO  time: code lens generation in 3.12s
+2023.11.24 16:48:54 WARN  no build target for: D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\src\test\scala\MySuite.scala
+Nov 24, 2023 4:50:10 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+2023.11.24 16:50:44 WARN  no build target for: D:\Bifm\Bifm_factory\Pipeline\High_performance\scala_bifm\src\main\scala\Main.scala
