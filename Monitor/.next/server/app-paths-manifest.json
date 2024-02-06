@@ -1,0 +1,5 @@
+{
+  "/api/mock/login/route": "app/api/mock/login/route.js",
+  "/(authentication)/login/page": "app/(authentication)/login/page.js",
+  "/(dashboard)/page": "app/(dashboard)/page.js"
+}
