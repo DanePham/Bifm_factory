@@ -55,7 +55,7 @@ export default function Index(props: Props) {
       'x-total-count': pokemonResource.meta.total.toString(),
     },
   })
-
+  console.log(resource);
   return (
     <Card>
       <Card.Header>Pokémon</Card.Header>
