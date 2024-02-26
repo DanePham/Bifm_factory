@@ -55,7 +55,19 @@ export default function Index(props: Props) {
       'x-total-count': pokemonResource.meta.total.toString(),
     },
   })
-  console.log(resource);
+
+  const { data: { data: test } } = useSWRAxios<Resource<Pokemon>>({
+    url: 'http://127.0.0.1:8080/api/tutorials',
+    params: {},
+  }, {
+    data: pokemonResource,
+    headers: {
+      'x-total-count': pokemonResource.meta.total.toString(),
+    },
+  })
+  
+  console.log(test);
+
   return (
     <Card>
       <Card.Header>Pokémon</Card.Header>
